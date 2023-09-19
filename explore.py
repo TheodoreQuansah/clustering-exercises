@@ -10,7 +10,7 @@ def explore_bedrooms(df):
     print('Alternative hypothesis: The number of bedrooms has a correlation with logerror')
     print('BAR PLOT')
     # Scatter plot of bedrooms vs. logerror
-    sns.barplot(data=df, x='bedroomcnt', y='logerror')
+    sns.barplot(data=df, x='bedroomcnt', y='logerror', errorbar = None)
     plt.title('Bedrooms vs. Logerror')
     plt.show()
 
@@ -44,7 +44,7 @@ def explore_bathrooms(df):
     print('Alternative hypothesis: The number of bathrooms has a correlation with logerror')
     print('BAR PLOT')
     # Scatter plot of bedrooms vs. logerror
-    sns.barplot(data=df, x='bathroomcnt', y='logerror')
+    sns.barplot(data=df, x='bathroomcnt', y='logerror', errorbar = None)
     plt.title('Bathrooms vs. Logerror')
     plt.show()
 
@@ -53,6 +53,7 @@ def explore_bathrooms(df):
     bathrooms_corr, p = pearsonr(df['bathroomcnt'], df['logerror'])
     
     print(f'We reject the null hypothesis with a correlation of {bathrooms_corr} and a p_value of {p}')
+
 
 
 def heating_cooling_vs_logerror(df):
@@ -84,7 +85,12 @@ def heating_cooling_vs_logerror(df):
     print('F-ONEWAY TEST')
     f_statistic, p = f_oneway(*anova_results.values())
 
-    print(f'We reject the null hypothesis with an f_statistic of {f_statistic} and a p_value of {p}')
+    if p <= 0.05:
+        print(f'We reject the null hypothesis with an f_statistic of {f_statistic} and a p_value of {p}')
+    else:
+        print(f'We do not reject the null hypothesis with an f_statistic of {f_statistic} and a p_value of {p}')
+
+
 
 
 def yearbuilt_vs_logerror(df):
