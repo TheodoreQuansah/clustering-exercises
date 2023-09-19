@@ -2,13 +2,14 @@ import env
 import os
 import numpy as np
 import pandas as pd
+from pydataset import data
 from zillow_query import query as zquery
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
 def get_url(
             schema,
-            user=env.user, 
+            user=env.username, 
             host=env.host, 
             password=env.password
 ):
@@ -233,15 +234,46 @@ def handle_missing_values(df,
     Utilizing an input proportion for the column and rows of DataFrame df,
     drop the missing values per the axis contingent on the amount of data present.
     '''
-    prop_missing_col = 1 - prop_required_col 
+    prop_missing_col = 1 - prop_required_column 
     # multiply the axis with with the appropriate ratio
     # this will return the number of rows that we want to reference
     # for our dropna function
     n_required_column = round(df.shape[0] * prop_required_column)
     df = df.dropna(axis=1, thresh=n_required_column)
     n_required_row = round(df.shape[1] * prop_required_row)
-    df = df.dropna(axis=0, thresh=n_required_row)
+    df.dropna(axis=0, thresh=n_required_row)
+    df = df.dropna()
     return df
+
+
+
+def handles_missing_values(df, prop_required_column=0.7, prop_required_row=0.7):
+    """
+    Handle missing values by dropping columns with more than prop_required_column
+    null values and rows with more than prop_required_row null values.
+
+    Parameters:
+    - df: The DataFrame to handle missing values in.
+    - prop_required_column: The proportion of non-null values a column must have to be retained.
+    - prop_required_row: The proportion of non-null values a row must have to be retained.
+
+    Returns:
+    - df: The DataFrame with missing values handled.
+    """
+    # Calculate the column and row thresholds based on proportions
+    col_threshold = int(prop_required_column * df.shape[0])
+    row_threshold = int(prop_required_row * df.shape[1])
+    
+    # Drop columns with more than col_threshold null values
+    df.dropna(axis=1, thresh=col_threshold, inplace=True)
+    
+    # Drop rows with more than row_threshold null values
+    df.dropna(axis=0, thresh=row_threshold, inplace=True)
+    df = df.dropna()
+    
+    return df
+
+
 
 
 def prep_zillow(
@@ -308,3 +340,25 @@ def wrangle_zillow(summarization=True,
         prop_required_row=prop_required_row
     )
     return train, validate, test
+
+
+def iris_df():
+    # Load the Iris dataset
+    df = data('iris')
+    # Clean up the column names
+    df.columns = [col.lower().replace('.', '_') for col in df.columns]
+    
+    # Split the DataFrame into train, val, and test sets
+    train, temp = train_test_split(df, test_size=0.3, random_state=42)
+    val, test = train_test_split(temp, test_size=1/3, random_state=42)
+    
+    return train, val, test
+
+def get_distances(list_a, list_b):
+    # initialize an empty list to toss the
+    # differences into
+    difs = []
+    # for every comparison of dims in the points:
+    for a_i, b_i in zip(list_a, list_b):
+        difs.append((a_i - b_i) ** 2)
+    return sum(difs) ** .5
